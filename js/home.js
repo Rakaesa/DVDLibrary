@@ -2,9 +2,11 @@ $(document).ready(function () {
     loadDvds();
 	$('#addDiv').hide();
 	$('#editDiv').hide();
+	$('#viewDiv').hide();
 	toggleForm();
 	addDvd();
 	searchForm();
+	back();
 });
 
 
@@ -24,7 +26,7 @@ function loadDvds() {
 				var rating = dvd.rating;
                 
                 var row = '<tr>';
-                    row += '<td>' + title + '</td>';
+                    row += '<td><u><a href="javascript:viewDvd('+id+')">' + title + '</a></u></td>';
                     row += '<td>' + releaseYear + '</td>';
                     row += '<td>' + director + '</td>';
                     row += '<td>' + rating +'</td>';
@@ -50,10 +52,14 @@ function clearDvdTable() {
 function toggleForm(){
 	
 	$('#createDvdBtn').click(function(){
-		if($('#addDiv').is(":hidden"))
+		if($('#addDiv').is(":hidden")){
 			$('#addDiv').show();
-		else
+			$('#dvdTableDiv').hide();
+		}
+		else{
 			$('#addDiv').hide();
+			$('#dvdTableDiv').show();
+		}
 	});		
 }
 
@@ -101,6 +107,7 @@ function searchForm(){
 
 function toggleEdit(dvdId){
 	
+		$('#dvdTableDiv').hide();
 		$('#editDiv').show();	
 		$('#errorMessages').empty();
 			
@@ -124,10 +131,50 @@ function toggleEdit(dvdId){
 		})	
 }
 
+function viewDvd(dvdId){
+
+		$('#viewDiv').show();
+		$('#dvdTableDiv').hide();
+		$('#errorMessages').empty();
+			
+		$.ajax({
+			type: 'GET',
+			url: 'http://dvd-library.us-east-1.elasticbeanstalk.com/dvd/' + dvdId,
+			success: function(dvd, status) {
+				$('#H1Title').text(dvd.title);
+				$('#pReleaseYear').text("Release Year: "+dvd.releaseYear);
+				$('#pDirector').text("Director: "+dvd.director);
+				$('#pRating').text("Rating: "+dvd.rating);
+				$('#pNotes').text("Notes: "+dvd.notes);
+				
+			},
+			error: function() {
+				$('#errorMessages')
+				.append($('<li>')
+				.attr({class: 'list-group-item list-group-item-danger'})
+				.text('Error calling web service. Please try again later.')); 
+			}
+		})	
+}
+
+function back(){
+	$('#backBtn').click(function(){
+	$('#viewDiv').hide();
+	loadDvds();
+	$('#dvdTableDiv').show();
+	});	
+}
+
+function cancel(){
+	$('#addDiv').hide();
+	$('#editDiv').hide();
+	loadDvds();
+	$('#dvdTableDiv').show();
+}
+
 function addDvd() {
     $('#addButton').click(function (event) {
 		var haveValidationErrors = checkAndDisplayValidationErrors($('#addForm').find('input'));
-        
         if(haveValidationErrors) {
             return false;
         }
@@ -228,6 +275,8 @@ function checkAndDisplayValidationErrors(input) {
 }
 
 function deleteDvd(dvdId) {
+	var conf = confirm("Do you really want to delete the DVD?");
+	if(conf == true){
     $.ajax({
         type: 'DELETE',
         url: 'http://dvd-library.us-east-1.elasticbeanstalk.com/dvd/' + dvdId,
@@ -235,4 +284,5 @@ function deleteDvd(dvdId) {
             loadDvds();
         }
     });
+	}
 }
