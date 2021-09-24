@@ -64,6 +64,7 @@ function searchForm(){
 		var searchCat = $('#categories option:selected').val();
 		
 		clearDvdTable();
+		var contentRows = $('#contentRows');
 		$.ajax({
 			type: 'GET',
 			url: 'http://dvd-library.us-east-1.elasticbeanstalk.com/dvds/'+searchCat+'/'+term,
